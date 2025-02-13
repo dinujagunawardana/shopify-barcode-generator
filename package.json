@@ -1,0 +1,26 @@
+{
+  "name": "barcode-creation-app",
+  "version": "1.0.0",
+  "main": "web/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy"
+  },
+  "dependencies": {
+    "@shopify/polaris": "^13.9.2",
+    "jsbarcode": "^3.11.6",
+    "react-to-print": "^3.0.5"
+  },
+  "author": "dinuja",
+  "private": true,
+  "workspaces": [
+    "extensions/*",
+    "web",
+    "web/frontend"
+  ]
+}
