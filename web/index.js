@@ -39,6 +39,51 @@ app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
 
+app.get("/api/products", async (_req, res) => {
+  const client = new shopify.api.clients.Graphql({
+    session: res.locals.shopify.session,
+  });
+
+  try {
+    const data = await client.request(`
+      query {
+        products(first: 50) {
+          edges {
+            node {
+              id
+              title
+              variants(first: 1) {
+                edges {
+                  node {
+                    id
+                    price
+                    sku
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const products = data.data.products.edges.map(({ node }) => ({
+      id: node.id,
+      title: node.title,
+      variants: node.variants.edges.map(({ node: variant }) => ({
+        id: variant.id,
+        price: variant.price,
+        sku: variant.sku,
+      })),
+    }));
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/products/count", async (_req, res) => {
   const client = new shopify.api.clients.Graphql({
     session: res.locals.shopify.session,
