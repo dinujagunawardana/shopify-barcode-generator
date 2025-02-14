@@ -17,8 +17,9 @@
       }
     </script>
 
-    <meta name="shopify-api-key" content="%VITE_SHOPIFY_API_KEY%" />
+    <meta name="shopify-api-key" content="<%= process.env.SHOPIFY_API_KEY %>" />
     <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+    <title>Barcode Generator</title>
   </head>
   <body>
     <div id="app"><!--index.jsx injects App.jsx here--></div>

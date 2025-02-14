@@ -1,19 +1,7 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import react from "@vitejs/plugin-react";
-
-const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY || '';
-
-if (
-  process.env.npm_lifecycle_event === "build" &&
-  !process.env.CI &&
-  !SHOPIFY_API_KEY
-) {
-  console.warn(
-    "\nRunning build without SHOPIFY_API_KEY. The frontend will not work properly.\n"
-  );
-}
 
 const proxyOptions = {
   target: `http://127.0.0.1:${process.env.BACKEND_PORT}`,
@@ -43,25 +31,37 @@ if (host === "localhost") {
   };
 }
 
-export default defineConfig({
-  root: dirname(fileURLToPath(import.meta.url)),
-  plugins: [react()],
-  define: {
-    "process.env.VITE_SHOPIFY_API_KEY": JSON.stringify(SHOPIFY_API_KEY),
-  },
-  build: {
-    outDir: "dist",
-  },
-  resolve: {
-    preserveSymlinks: true,
-  },
-  server: {
-    host: "localhost",
-    port: process.env.FRONTEND_PORT,
-    hmr: hmrConfig,
-    proxy: {
-      "^/(\\?.*)?$": proxyOptions,
-      "^/api(/|(\\?.*)?$)": proxyOptions,
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY || env.SHOPIFY_API_KEY || '';
+
+  if (command === "build" && !process.env.CI && !SHOPIFY_API_KEY) {
+    console.warn(
+      "\nRunning build without SHOPIFY_API_KEY. The frontend will not work properly.\n"
+    );
+  }
+
+  return {
+    root: dirname(fileURLToPath(import.meta.url)),
+    plugins: [react()],
+    define: {
+      "process.env.SHOPIFY_API_KEY": JSON.stringify(SHOPIFY_API_KEY),
+      "process.env.VITE_SHOPIFY_API_KEY": JSON.stringify(SHOPIFY_API_KEY)
     },
-  },
+    build: {
+      outDir: "dist"
+    },
+    resolve: {
+      preserveSymlinks: true,
+    },
+    server: {
+      host: "localhost",
+      port: process.env.FRONTEND_PORT,
+      hmr: hmrConfig,
+      proxy: {
+        "^/(\\?.*)?$": proxyOptions,
+        "^/api(/|(\\?.*)?$)": proxyOptions,
+      },
+    },
+  };
 });
