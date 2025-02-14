@@ -16,5 +16,10 @@ import { trophyImage } from "../assets";
 import { BarcodeGenerator } from "../components/BarcodeGenerator";
 
 export default function HomePage() {
-  return <BarcodeGenerator />;
+  return (
+    <Page>
+      <TitleBar title="Barcode Generator" />
+      <BarcodeGenerator />
+    </Page>
+  );
 }
