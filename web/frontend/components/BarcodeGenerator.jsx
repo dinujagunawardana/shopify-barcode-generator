@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
 import {
-  Page,
   Layout,
   Card,
   ResourceList,
@@ -11,6 +10,8 @@ import {
   Select,
   RangeSlider,
   ChoiceList,
+  Spinner,
+  TextContainer,
 } from '@shopify/polaris';
 import { useAppQuery } from '../hooks';
 import JsBarcode from 'jsbarcode';
@@ -76,6 +77,8 @@ export function BarcodeGenerator() {
           return isVertical 
             ? { width: `${customHeight}in`, height: `${customWidth}in` }
             : { width: `${customWidth}in`, height: `${customHeight}in` };
+        default:
+          return { width: '3.5in', height: '1.125in' };
       }
     } else {
       switch (barcodeSize) {
@@ -199,36 +202,29 @@ export function BarcodeGenerator() {
       {selectedItems.map((item) => {
         const sku = item.variants[0]?.sku;
         const isVertical = orientation[0] === 'vertical';
-        
+        const sizeStyles = getSizeStyles();
+        const barcodeUrl = generateBarcode(item);
+
         return (
-          <div 
-            key={item.id} 
+          <div
+            key={item.id}
             style={{
-              ...getSizeStyles(),
-              margin: '0.125in',
-              padding: '0.1in',
-              border: '1px dashed #ccc',
-              pageBreakInside: 'avoid',
+              ...sizeStyles,
+              margin: '0.25in',
+              display: 'inline-block',
               textAlign: 'center',
-              fontSize: labelType === 'labelMaker' ? '7px' : '9px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              transform: isVertical ? 'rotate(90deg)' : 'none',
-              transformOrigin: 'left top'
             }}
           >
-            <div style={{ fontWeight: 'bold', marginBottom: '0.05in' }}>{item.title}</div>
-            <div style={{ marginBottom: '0.05in' }}>${item.variants[0]?.price}</div>
-            {sku && <div style={{ marginBottom: '0.05in' }}>SKU: {sku}</div>}
-            <img 
-              src={generateBarcode(item)} 
+            <div style={{ marginBottom: '0.25in' }}>
+              <strong>{item.title}</strong>
+              {sku && <div>SKU: {sku}</div>}
+            </div>
+            <img
+              src={barcodeUrl}
               alt={`Barcode for ${item.title}`}
-              style={{ 
-                maxWidth: '100%', 
-                height: 'auto',
-                transform: isVertical ? 'rotate(-90deg)' : 'none',
-                transformOrigin: 'center center'
+              style={{
+                maxWidth: '100%',
+                transform: isVertical ? 'rotate(90deg)' : 'none',
               }}
             />
           </div>
@@ -245,51 +241,56 @@ export function BarcodeGenerator() {
     );
   }
 
-  return (
-    <Page title="Barcode Generator">
-      <Layout>
-        <Layout.Section>
-          <Card>
-            <ResourceList
-              loading={isLoading}
-              items={products || []}
-              renderItem={renderItem}
-              selectedItems={selectedItems}
-              onSelectionChange={setSelectedItems}
-              selectable
-              bulkActions={[
-                {
-                  content: 'Generate Bulk Barcodes',
-                  onAction: handleBulkAction,
-                },
-              ]}
-            />
-          </Card>
-        </Layout.Section>
+  if (isLoading) {
+    return (
+      <Stack distribution="center">
+        <Spinner size="large" />
+      </Stack>
+    );
+  }
 
-        <Modal
-          open={showPreview}
-          onClose={() => setShowPreview(false)}
-          title="Barcode Preview"
-          primaryAction={{
-            content: 'Print Barcodes',
-            onAction: handlePrint,
-          }}
-          secondaryActions={[
+  return (
+    <Stack vertical>
+      <Card sectioned>
+        {renderSizeControls()}
+      </Card>
+
+      <Card>
+        <ResourceList
+          resourceName={{ singular: 'Product', plural: 'Products' }}
+          items={products || []}
+          renderItem={renderItem}
+          selectedItems={selectedItems}
+          onSelectionChange={setSelectedItems}
+          selectable
+          bulkActions={[
             {
-              content: 'Close',
-              onAction: () => setShowPreview(false),
+              content: 'Generate Barcodes',
+              onAction: handleBulkAction,
             },
           ]}
-        >
-          <Modal.Section>
-            {renderSizeControls()}
-            <div style={{ marginTop: '1rem' }}>
-              {renderBarcodePreview()}
-            </div>
-          </Modal.Section>
-        </Modal>
-      </Layout>
-    </Page>
+        />
+      </Card>
+
+      <Modal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Barcode Preview"
+        primaryAction={{
+          content: 'Print',
+          onAction: handlePrint,
+        }}
+        secondaryActions={[
+          {
+            content: 'Close',
+            onAction: () => setShowPreview(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          {renderBarcodePreview()}
+        </Modal.Section>
+      </Modal>
+    </Stack>
   );
 }

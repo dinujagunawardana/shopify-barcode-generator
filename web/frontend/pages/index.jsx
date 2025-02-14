@@ -1,12 +1,7 @@
 import {
-  Card,
   Page,
   Layout,
-  TextContainer,
-  Image,
-  Stack,
-  Link,
-  Text,
+  Card
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useTranslation, Trans } from "react-i18next";
@@ -19,7 +14,13 @@ export default function HomePage() {
   return (
     <Page>
       <TitleBar title="Barcode Generator" />
-      <BarcodeGenerator />
+      <Layout>
+        <Layout.Section>
+          <Card sectioned>
+            <BarcodeGenerator />
+          </Card>
+        </Layout.Section>
+      </Layout>
     </Page>
   );
 }
