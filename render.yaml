@@ -1,15 +1,17 @@
 services:
   - type: web
-    name: shopify-barcode-generator
+    name: shopify-barcode-app
     env: node
-    buildCommand: cd web && npm install
-    startCommand: cd web && npm run serve
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
-      - key: SHOPIFY_API_KEY
-        value: b350a343b9586c55e8d999d916348d3f
-      - key: SHOPIFY_API_SECRET
-        value: 2ea225eb57c4529cb335b1316c860410
-      - key: SCOPES
-        value: read_products,write_products
       - key: NODE_ENV
         value: production
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SCOPES
+        sync: false
+      - key: HOST
+        sync: false
